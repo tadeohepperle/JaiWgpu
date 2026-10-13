@@ -1,0 +1,4 @@
+lib/*
+.build/
+examples/triangle
+examples/triangle.exe
