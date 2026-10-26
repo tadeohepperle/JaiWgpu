@@ -1,19 +1,18 @@
-WgpuSdl2 :: #import,dir "../WgpuSdl2";
-
-Wgpu :: WgpuSdl2.Wgpu;
+wgpu_sdl2 :: #import "wgpu_sdl2";
+wgpu :: #import "wgpu";
 
 #import "SDL";
 #import "Basic";
 
 
 State :: struct {
-    instance: Wgpu.Instance;
-    surface: Wgpu.Surface;
-    adapter: Wgpu.Adapter;
-    device: Wgpu.Device;
-    queue: Wgpu.Queue;
-    config: Wgpu.SurfaceConfiguration;
-    pipeline: Wgpu.RenderPipeline;
+    instance: wgpu.Instance;
+    surface: wgpu.Surface;
+    adapter: wgpu.Adapter;
+    device: wgpu.Device;
+    queue: wgpu.Queue;
+    config: wgpu.SurfaceConfiguration;
+    pipeline: wgpu.RenderPipeline;
 }
 
 
@@ -62,44 +61,44 @@ main :: () {
 
 init_wgpu :: (state: *State, window: *SDL_Window) {
 
-    state.instance = Wgpu.CreateInstance(null);
+    state.instance = wgpu.CreateInstance(null);
     if !state.instance fail("Could not create a wgpu instance.");
 
-    state.surface = WgpuSdl2.GetSurface(state.instance, window);
+    state.surface = wgpu_sdl2.GetSurface(state.instance, window);
     if !state.surface fail("Could not create a wgpu surface.");
 
     // Request an adapter. With .AllowProcessEvents the callback fires during InstanceProcessEvents.
-    options := Wgpu.RequestAdapterOptions.{ compatibleSurface = state.surface };
-    Wgpu.InstanceRequestAdapter(state.instance, *options, .{
+    options := wgpu.RequestAdapterOptions.{ compatibleSurface = state.surface };
+    wgpu.InstanceRequestAdapter(state.instance, *options, .{
         mode = .AllowProcessEvents,
         callback = on_adapter,
         userdata1 = state,
     });
-    Wgpu.InstanceProcessEvents(state.instance);
+    wgpu.InstanceProcessEvents(state.instance);
     if !state.adapter fail("Could not get a wgpu adapter.");
 
-    info, info_status := Wgpu.AdapterGetInfo(state.adapter);
+    info, info_status := wgpu.AdapterGetInfo(state.adapter);
     if info_status == .Success {
-        print("Using % (%)\n", Wgpu.to_string(info.device), info.backendType);
-        Wgpu.AdapterInfoFreeMembers(info);
+        print("Using % (%)\n", wgpu.to_string(info.device), info.backendType);
+        wgpu.AdapterInfoFreeMembers(info);
     }
 
     // Request a device.
-    device_descriptor := Wgpu.DeviceDescriptor.{
+    device_descriptor := wgpu.DeviceDescriptor.{
         uncapturedErrorCallbackInfo = .{ callback = on_uncaptured_error },
     };
-    Wgpu.AdapterRequestDevice(state.adapter, *device_descriptor, .{
+    wgpu.AdapterRequestDevice(state.adapter, *device_descriptor, .{
         mode = .AllowProcessEvents,
         callback = on_device,
         userdata1 = state,
     });
-    Wgpu.InstanceProcessEvents(state.instance);
+    wgpu.InstanceProcessEvents(state.instance);
     if !state.device fail("Could not get a wgpu device.");
 
-    state.queue = Wgpu.DeviceGetQueue(state.device);
+    state.queue = wgpu.DeviceGetQueue(state.device);
 
     // Configure the surface.
-    capabilities, caps_status := Wgpu.SurfaceGetCapabilities(state.surface, state.adapter);
+    capabilities, caps_status := wgpu.SurfaceGetCapabilities(state.surface, state.adapter);
     if caps_status != .Success || capabilities.formatCount == 0 fail("Could not get the surface capabilities.");
 
     width, height: s32;
@@ -114,28 +113,28 @@ init_wgpu :: (state: *State, window: *SDL_Window) {
         presentMode = .Fifo,
         alphaMode = capabilities.alphaModes[0],
     };
-    Wgpu.SurfaceCapabilitiesFreeMembers(capabilities);
-    Wgpu.SurfaceConfigure(state.surface, *state.config);
+    wgpu.SurfaceCapabilitiesFreeMembers(capabilities);
+    wgpu.SurfaceConfigure(state.surface, *state.config);
 
     // Create the pipeline.
-    wgsl := Wgpu.ShaderSourceWGSL.{ sType = .ShaderSourceWGSL, code = Wgpu.to_string_view(SHADER) };
-    module := Wgpu.DeviceCreateShaderModule(state.device, *(Wgpu.ShaderModuleDescriptor.{ nextInChain = *wgsl.chain }));
-    defer Wgpu.ShaderModuleRelease(module);
+    wgsl := wgpu.ShaderSourceWGSL.{ sType = .ShaderSourceWGSL, code = wgpu.to_string_view(SHADER) };
+    module := wgpu.DeviceCreateShaderModule(state.device, *(wgpu.ShaderModuleDescriptor.{ nextInChain = *wgsl.chain }));
+    defer wgpu.ShaderModuleRelease(module);
 
-    color_target := Wgpu.ColorTargetState.{
+    color_target := wgpu.ColorTargetState.{
         format = state.config.format,
         writeMask = .All,
     };
-    fragment := Wgpu.FragmentState.{
+    fragment := wgpu.FragmentState.{
         module = module,
-        entryPoint = Wgpu.to_string_view("fs_main"),
+        entryPoint = wgpu.to_string_view("fs_main"),
         targetCount = 1,
         targets = *color_target,
     };
-    pipeline_descriptor := Wgpu.RenderPipelineDescriptor.{
+    pipeline_descriptor := wgpu.RenderPipelineDescriptor.{
         vertex = .{
             module = module,
-            entryPoint = Wgpu.to_string_view("vs_main"),
+            entryPoint = wgpu.to_string_view("vs_main"),
         },
         primitive = .{
             topology = .TriangleList,
@@ -146,30 +145,30 @@ init_wgpu :: (state: *State, window: *SDL_Window) {
         },
         fragment = *fragment,
     };
-    state.pipeline = Wgpu.DeviceCreateRenderPipeline(state.device, *pipeline_descriptor);
+    state.pipeline = wgpu.DeviceCreateRenderPipeline(state.device, *pipeline_descriptor);
 }
 
-on_adapter :: (status: Wgpu.RequestAdapterStatus, adapter: Wgpu.Adapter, message: Wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
+on_adapter :: (status: wgpu.RequestAdapterStatus, adapter: wgpu.Adapter, message: wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
     push_context, defer_pop;
     if status != .Success {
-        print("Request adapter failed (%): %\n", status, Wgpu.to_string(message));
+        print("Request adapter failed (%): %\n", status, wgpu.to_string(message));
         return;
     }
     (cast(*State) userdata1).adapter = adapter;
 }
 
-on_device :: (status: Wgpu.RequestDeviceStatus, device: Wgpu.Device, message: Wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
+on_device :: (status: wgpu.RequestDeviceStatus, device: wgpu.Device, message: wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
     push_context, defer_pop;
     if status != .Success {
-        print("Request device failed (%): %\n", status, Wgpu.to_string(message));
+        print("Request device failed (%): %\n", status, wgpu.to_string(message));
         return;
     }
     (cast(*State) userdata1).device = device;
 }
 
-on_uncaptured_error :: (device: *Wgpu.Device, type: Wgpu.ErrorType, message: Wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
+on_uncaptured_error :: (device: *wgpu.Device, type: wgpu.ErrorType, message: wgpu.StringView, userdata1: *void, userdata2: *void) #c_call {
     push_context, defer_pop;
-    print("wgpu error (%): %\n", type, Wgpu.to_string(message));
+    print("wgpu error (%): %\n", type, wgpu.to_string(message));
 }
 
 resize :: (state: *State, width: s32, height: s32) {
@@ -177,11 +176,11 @@ resize :: (state: *State, width: s32, height: s32) {
 
     state.config.width = cast(u32) width;
     state.config.height = cast(u32) height;
-    Wgpu.SurfaceConfigure(state.surface, *state.config);
+    wgpu.SurfaceConfigure(state.surface, *state.config);
 }
 
 frame :: (state: *State, window: *SDL_Window) {
-    surface_texture := Wgpu.SurfaceGetCurrentTexture(state.surface);
+    surface_texture := wgpu.SurfaceGetCurrentTexture(state.surface);
     if surface_texture.status == {
         case .SuccessOptimal; #through;
         case .SuccessSuboptimal;
@@ -191,7 +190,7 @@ frame :: (state: *State, window: *SDL_Window) {
         case .Outdated; #through;
         case .Lost;
             // Skip this frame, and re-configure the surface.
-            if surface_texture.texture Wgpu.TextureRelease(surface_texture.texture);
+            if surface_texture.texture wgpu.TextureRelease(surface_texture.texture);
             width, height: s32;
             SDL_GetWindowSize(window, *width, *height);
             resize(state, width, height);
@@ -204,44 +203,44 @@ frame :: (state: *State, window: *SDL_Window) {
         case;
             fail(tprint("SurfaceGetCurrentTexture failed with status %", surface_texture.status));
     }
-    defer Wgpu.TextureRelease(surface_texture.texture);
+    defer wgpu.TextureRelease(surface_texture.texture);
 
-    view := Wgpu.TextureCreateView(surface_texture.texture);
-    defer Wgpu.TextureViewRelease(view);
+    view := wgpu.TextureCreateView(surface_texture.texture);
+    defer wgpu.TextureViewRelease(view);
 
-    encoder := Wgpu.DeviceCreateCommandEncoder(state.device);
-    defer Wgpu.CommandEncoderRelease(encoder);
+    encoder := wgpu.DeviceCreateCommandEncoder(state.device);
+    defer wgpu.CommandEncoderRelease(encoder);
 
-    color_attachment := Wgpu.RenderPassColorAttachment.{
+    color_attachment := wgpu.RenderPassColorAttachment.{
         view = view,
-        depthSlice = Wgpu.DEPTH_SLICE_UNDEFINED,
+        depthSlice = wgpu.DEPTH_SLICE_UNDEFINED,
         loadOp = .Clear,
         storeOp = .Store,
         clearValue = .{ r = 0.1, g = 0.1, b = 0.12, a = 1 },
     };
-    pass := Wgpu.CommandEncoderBeginRenderPass(encoder, *(Wgpu.RenderPassDescriptor.{
+    pass := wgpu.CommandEncoderBeginRenderPass(encoder, *(wgpu.RenderPassDescriptor.{
         colorAttachmentCount = 1,
         colorAttachments = *color_attachment,
     }));
-    Wgpu.RenderPassEncoderSetPipeline(pass, state.pipeline);
-    Wgpu.RenderPassEncoderDraw(pass, 3, 1, 0, 0);
-    Wgpu.RenderPassEncoderEnd(pass);
-    Wgpu.RenderPassEncoderRelease(pass);
+    wgpu.RenderPassEncoderSetPipeline(pass, state.pipeline);
+    wgpu.RenderPassEncoderDraw(pass, 3, 1, 0, 0);
+    wgpu.RenderPassEncoderEnd(pass);
+    wgpu.RenderPassEncoderRelease(pass);
 
-    command_buffer := Wgpu.CommandEncoderFinish(encoder);
-    defer Wgpu.CommandBufferRelease(command_buffer);
+    command_buffer := wgpu.CommandEncoderFinish(encoder);
+    defer wgpu.CommandBufferRelease(command_buffer);
 
-    Wgpu.QueueSubmit(state.queue, .[command_buffer]);
-    Wgpu.SurfacePresent(state.surface);
+    wgpu.QueueSubmit(state.queue, .[command_buffer]);
+    wgpu.SurfacePresent(state.surface);
 }
 
 deinit_wgpu :: (state: *State) {
-    Wgpu.RenderPipelineRelease(state.pipeline);
-    Wgpu.QueueRelease(state.queue);
-    Wgpu.DeviceRelease(state.device);
-    Wgpu.AdapterRelease(state.adapter);
-    Wgpu.SurfaceRelease(state.surface);
-    Wgpu.InstanceRelease(state.instance);
+    wgpu.RenderPipelineRelease(state.pipeline);
+    wgpu.QueueRelease(state.queue);
+    wgpu.DeviceRelease(state.device);
+    wgpu.AdapterRelease(state.adapter);
+    wgpu.SurfaceRelease(state.surface);
+    wgpu.InstanceRelease(state.instance);
 }
 
 fail :: (message: string) {

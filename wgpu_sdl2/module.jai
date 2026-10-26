@@ -6,7 +6,7 @@
 //
 // Also reexports Wgpu, so please use this, otherwise there can be type mismatches due to uncanonicalized paths (compiler bug as of 2026-10-13)
 
-Wgpu :: #import,dir "..";
+wgpu :: #import "wgpu";
 
 #if OS == .LINUX {
     #load "glue_linux.jai";

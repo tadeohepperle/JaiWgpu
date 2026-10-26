@@ -10,9 +10,9 @@ The bindings are for v29.0.1.1 at the moment.
 
 Libraries are expected in the `lib` folder under the same name as they are released (just unzipped), e.g.
 
-    lib/wgpu-linux-x86_64-release/lib/libwgpu_native.a
-    lib/wgpu-macos-aarch64-release/lib/libwgpu_native.a
-    lib/wgpu-windows-x86_64-msvc-release/lib/wgpu_native.lib
+    wgpu/lib/wgpu-linux-x86_64-release/lib/libwgpu_native.a
+    wgpu/lib/wgpu-macos-aarch64-release/lib/libwgpu_native.a
+    wgpu/lib/wgpu-windows-x86_64-msvc-release/lib/wgpu_native.lib
 
 By default it will look for a static release version (`wgpu-OS-ARCH-release`),
 you can set the program parameter `WGPU_DEBUG = true` for it to look for a debug version,

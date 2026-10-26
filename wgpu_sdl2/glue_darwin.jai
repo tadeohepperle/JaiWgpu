@@ -2,18 +2,18 @@
 // we let SDL (>= 2.0.12) create a Metal view and layer for us, so we don't need an Objective-C runtime binding.
 // For best results create the window with SDL_WINDOW_METAL.
 
-GetSurface :: (instance: Wgpu.Instance, window: *SDL_Window) -> Wgpu.Surface {
+GetSurface :: (instance: wgpu.Instance, window: *SDL_Window) -> wgpu.Surface {
     metal_view := SDL_Metal_CreateView(window);
     metal_layer := SDL_Metal_GetLayer(metal_view);
     if !metal_layer {
         glue_panic(tprint("wgpu sdl2 glue: could not create a Metal layer: %", to_string(SDL_GetError())));
     }
 
-    source := Wgpu.SurfaceSourceMetalLayer.{
+    source := wgpu.SurfaceSourceMetalLayer.{
         sType = .SurfaceSourceMetalLayer,
         layer = metal_layer,
     };
-    return Wgpu.InstanceCreateSurface(instance, *(Wgpu.SurfaceDescriptor.{ nextInChain = *source.chain }));
+    return wgpu.InstanceCreateSurface(instance, *(wgpu.SurfaceDescriptor.{ nextInChain = *source.chain }));
 }
 
 #scope_file
