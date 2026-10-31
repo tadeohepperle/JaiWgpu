@@ -1,6 +1,6 @@
 {
     "local_modules": [
-        "",
+        ".",
         "wgpu_sdl2"
     ],
     "roots": [

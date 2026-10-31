@@ -32,6 +32,11 @@ Copy the unzipped release from https://github.com/gfx-rs/wgpu-native/releases/ta
 │   ├── wgpu.jai
 │   ├── wgpu_native.jai
 │   └── wgpu_native_types.jai
+├── wgpu_sdl2
+│   ├── glue_darwin.jai
+│   ├── glue_linux.jai
+│   ├── glue_windows.jai
+│   └── module.jai
 └── wgpu_sdl2
     ├── glue_darwin.jai
     ├── glue_linux.jai

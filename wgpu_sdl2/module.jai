@@ -15,7 +15,7 @@ wgpu :: #import "wgpu";
 } else #if OS == .MACOS {
     #load "glue_darwin.jai";
 } else {
-    #assert false "module wgpu/sdl2glue is not supported on the current target";
+    #assert false "module wgpu_sdl2 is not supported on the current target";
 }
 
 #scope_module
